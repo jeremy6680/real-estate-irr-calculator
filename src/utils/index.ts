@@ -7,6 +7,9 @@ export * from './serialization';
 // Export all factory functions
 export * from './factory';
 
+// Export all calculation functions
+export * from './calculation';
+
 /**
  * Generates a unique ID for projects
  */
