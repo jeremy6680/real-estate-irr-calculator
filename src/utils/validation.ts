@@ -1,51 +1,48 @@
-import type {
-  Project,
-  InitialInvestment,
-  CashFlow,
-  SaleProceeds,
-  ValidationResult,
-  ValidationError,
-} from '@/types';
+import type { Project, InitialInvestment, CashFlow, SaleProceeds, ValidationResult, ValidationError } from '../types';
 
 /**
- * Validates a number field
+ * Validates a number value
  * @param value The value to validate
- * @param fieldName The name of the field
+ * @param fieldName The name of the field being validated
  * @param min Optional minimum value
  * @param max Optional maximum value
- * @returns ValidationError or null if valid
+ * @returns ValidationError if invalid, null if valid
  */
 export const validateNumber = (
-  value: number | undefined | null,
+  value: any,
   fieldName: string,
   min?: number,
   max?: number
 ): ValidationError | null => {
-  if (value === undefined || value === null) {
+  // Check if value is null or undefined
+  if (value === null || value === undefined) {
     return {
       field: fieldName,
-      message: `${fieldName} is required`,
+      message: `${fieldName} is required`
     };
   }
 
+  // Check if value is a number
   if (typeof value !== 'number' || isNaN(value)) {
     return {
       field: fieldName,
-      message: `${fieldName} must be a valid number`,
+      message: `${fieldName} must be a valid number`
     };
   }
 
+  // Check minimum value
   if (min !== undefined && value < min) {
     return {
       field: fieldName,
-      message: `${fieldName} must be at least ${min}`,
+      message: `${fieldName} must be at least ${min}`
     };
   }
 
+  // Check maximum value
   if (max !== undefined && value > max) {
     return {
       field: fieldName,
-      message: `${fieldName} must be at most ${max}`,
+      message: `${fieldName} must be at most ${max}`
     };
   }
 
@@ -53,42 +50,45 @@ export const validateNumber = (
 };
 
 /**
- * Validates a string field
+ * Validates a string value
  * @param value The value to validate
- * @param fieldName The name of the field
+ * @param fieldName The name of the field being validated
  * @param required Whether the field is required
  * @param maxLength Optional maximum length
- * @returns ValidationError or null if valid
+ * @returns ValidationError if invalid, null if valid
  */
 export const validateString = (
-  value: string | undefined | null,
+  value: any,
   fieldName: string,
   required: boolean = true,
   maxLength?: number
 ): ValidationError | null => {
-  if ((value === undefined || value === null || value === '') && required) {
+  // Check if value is null, undefined, or empty string for required fields
+  if (required && (value === null || value === undefined || value === '')) {
     return {
       field: fieldName,
-      message: `${fieldName} is required`,
+      message: `${fieldName} is required`
     };
   }
 
-  if (value !== undefined && value !== null && typeof value !== 'string') {
+  // If not required and value is null/undefined/empty, it's valid
+  if (!required && (value === null || value === undefined || value === '')) {
+    return null;
+  }
+
+  // Check if value is a string
+  if (typeof value !== 'string') {
     return {
       field: fieldName,
-      message: `${fieldName} must be a string`,
+      message: `${fieldName} must be a string`
     };
   }
 
-  if (
-    value !== undefined &&
-    value !== null &&
-    maxLength !== undefined &&
-    value.length > maxLength
-  ) {
+  // Check maximum length
+  if (maxLength !== undefined && value.length > maxLength) {
     return {
       field: fieldName,
-      message: `${fieldName} must be at most ${maxLength} characters`,
+      message: `${fieldName} must be at most ${maxLength} characters`
     };
   }
 
@@ -98,186 +98,193 @@ export const validateString = (
 /**
  * Validates an InitialInvestment object
  * @param investment The InitialInvestment object to validate
- * @returns ValidationResult
+ * @returns ValidationResult with any errors found
  */
 export const validateInitialInvestment = (investment: InitialInvestment): ValidationResult => {
   const errors: ValidationError[] = [];
 
-  // Validate purchase price
-  const purchasePriceError = validateNumber(investment.purchasePrice, 'Purchase Price', 0);
-  if (purchasePriceError) errors.push(purchasePriceError);
+  // Purchase price must be greater than zero
+  if (investment.purchasePrice <= 0) {
+    errors.push({
+      field: 'purchasePrice',
+      message: 'Purchase price must be greater than zero'
+    });
+  }
 
-  // Validate closing costs
-  const closingCostsError = validateNumber(investment.closingCosts, 'Closing Costs', 0);
-  if (closingCostsError) errors.push(closingCostsError);
+  // Closing costs must be non-negative
+  if (investment.closingCosts < 0) {
+    errors.push({
+      field: 'closingCosts',
+      message: 'Closing costs cannot be negative'
+    });
+  }
 
-  // Validate renovation costs
-  const renovationCostsError = validateNumber(investment.renovationCosts, 'Renovation Costs', 0);
-  if (renovationCostsError) errors.push(renovationCostsError);
+  // Renovation costs must be non-negative
+  if (investment.renovationCosts < 0) {
+    errors.push({
+      field: 'renovationCosts',
+      message: 'Renovation costs cannot be negative'
+    });
+  }
 
-  // Validate other upfront expenses
-  const otherExpensesError = validateNumber(
-    investment.otherUpfrontExpenses,
-    'Other Upfront Expenses',
-    0
-  );
-  if (otherExpensesError) errors.push(otherExpensesError);
+  // Other upfront expenses must be non-negative
+  if (investment.otherUpfrontExpenses < 0) {
+    errors.push({
+      field: 'otherUpfrontExpenses',
+      message: 'Other upfront expenses cannot be negative'
+    });
+  }
 
   return {
     isValid: errors.length === 0,
-    errors,
+    errors
   };
 };
 
 /**
  * Validates a CashFlow object
  * @param cashFlow The CashFlow object to validate
- * @returns ValidationResult
+ * @returns ValidationResult with any errors found
  */
 export const validateCashFlow = (cashFlow: CashFlow): ValidationResult => {
   const errors: ValidationError[] = [];
 
-  // Validate period
-  const periodError = validateNumber(cashFlow.period, 'Period', 1);
-  if (periodError) errors.push(periodError);
-
-  // Validate period type
-  if (cashFlow.periodType !== 'monthly' && cashFlow.periodType !== 'annual') {
+  // Period must be positive
+  if (cashFlow.period <= 0) {
     errors.push({
-      field: 'Period Type',
-      message: 'Period Type must be either "monthly" or "annual"',
+      field: 'period',
+      message: 'Period must be greater than zero'
     });
   }
 
-  // Validate rental income
-  const rentalIncomeError = validateNumber(cashFlow.rentalIncome, 'Rental Income', 0);
-  if (rentalIncomeError) errors.push(rentalIncomeError);
+  // Rental income must be non-negative
+  if (cashFlow.rentalIncome < 0) {
+    errors.push({
+      field: 'rentalIncome',
+      message: 'Rental income cannot be negative'
+    });
+  }
 
-  // Validate operating expenses
-  const operatingExpensesError = validateNumber(
-    cashFlow.operatingExpenses,
-    'Operating Expenses',
-    0
-  );
-  if (operatingExpensesError) errors.push(operatingExpensesError);
+  // Operating expenses must be non-negative
+  if (cashFlow.operatingExpenses < 0) {
+    errors.push({
+      field: 'operatingExpenses',
+      message: 'Operating expenses cannot be negative'
+    });
+  }
 
-  // Validate debt service
-  const debtServiceError = validateNumber(cashFlow.debtService, 'Debt Service', 0);
-  if (debtServiceError) errors.push(debtServiceError);
+  // Debt service must be non-negative
+  if (cashFlow.debtService < 0) {
+    errors.push({
+      field: 'debtService',
+      message: 'Debt service cannot be negative'
+    });
+  }
 
-  // Validate vacancy loss
-  const vacancyLossError = validateNumber(cashFlow.vacancyLoss, 'Vacancy Loss', 0);
-  if (vacancyLossError) errors.push(vacancyLossError);
+  // Vacancy loss must be non-negative
+  if (cashFlow.vacancyLoss < 0) {
+    errors.push({
+      field: 'vacancyLoss',
+      message: 'Vacancy loss cannot be negative'
+    });
+  }
+
+  // Period type must be valid
+  if (cashFlow.periodType !== 'monthly' && cashFlow.periodType !== 'annual') {
+    errors.push({
+      field: 'periodType',
+      message: 'Period type must be either "monthly" or "annual"'
+    });
+  }
 
   return {
     isValid: errors.length === 0,
-    errors,
+    errors
   };
 };
 
 /**
  * Validates a SaleProceeds object
  * @param saleProceeds The SaleProceeds object to validate
- * @returns ValidationResult
+ * @returns ValidationResult with any errors found
  */
 export const validateSaleProceeds = (saleProceeds: SaleProceeds): ValidationResult => {
   const errors: ValidationError[] = [];
 
-  // Validate estimated sale price
-  const salePriceError = validateNumber(saleProceeds.estimatedSalePrice, 'Estimated Sale Price', 0);
-  if (salePriceError) errors.push(salePriceError);
+  // Estimated sale price must be greater than zero
+  if (saleProceeds.estimatedSalePrice <= 0) {
+    errors.push({
+      field: 'estimatedSalePrice',
+      message: 'Estimated sale price must be greater than zero'
+    });
+  }
 
-  // Validate selling costs
-  const sellingCostsError = validateNumber(saleProceeds.sellingCosts, 'Selling Costs', 0);
-  if (sellingCostsError) errors.push(sellingCostsError);
+  // Selling costs must be non-negative
+  if (saleProceeds.sellingCosts < 0) {
+    errors.push({
+      field: 'sellingCosts',
+      message: 'Selling costs cannot be negative'
+    });
+  }
 
-  // Validate holding period
-  const holdingPeriodError = validateNumber(saleProceeds.holdingPeriod, 'Holding Period', 1);
-  if (holdingPeriodError) errors.push(holdingPeriodError);
+  // Holding period must be positive
+  if (saleProceeds.holdingPeriod <= 0) {
+    errors.push({
+      field: 'holdingPeriod',
+      message: 'Holding period must be greater than zero'
+    });
+  }
 
-  // Validate holding period type
+  // Holding period type must be valid
   if (saleProceeds.holdingPeriodType !== 'months' && saleProceeds.holdingPeriodType !== 'years') {
     errors.push({
-      field: 'Holding Period Type',
-      message: 'Holding Period Type must be either "months" or "years"',
+      field: 'holdingPeriodType',
+      message: 'Holding period type must be either "months" or "years"'
     });
   }
 
   return {
     isValid: errors.length === 0,
-    errors,
+    errors
   };
 };
 
 /**
  * Validates a Project object
  * @param project The Project object to validate
- * @returns ValidationResult
+ * @returns ValidationResult with any errors found
  */
 export const validateProject = (project: Project): ValidationResult => {
   const errors: ValidationError[] = [];
 
-  // Validate ID
-  const idError = validateString(project.id, 'ID');
-  if (idError) errors.push(idError);
-
-  // Validate name
-  const nameError = validateString(project.name, 'Name', true, 100);
-  if (nameError) errors.push(nameError);
-
-  // Validate description (optional)
-  if (project.description !== undefined) {
-    const descriptionError = validateString(project.description, 'Description', false, 1000);
-    if (descriptionError) errors.push(descriptionError);
-  }
-
-  // Validate dates
-  if (!project.createdAt || isNaN(new Date(project.createdAt).getTime())) {
+  // Project name is required
+  if (!project.name || project.name.trim().length === 0) {
     errors.push({
-      field: 'Created At',
-      message: 'Created At must be a valid date',
-    });
-  }
-
-  if (!project.updatedAt || isNaN(new Date(project.updatedAt).getTime())) {
-    errors.push({
-      field: 'Updated At',
-      message: 'Updated At must be a valid date',
+      field: 'name',
+      message: 'Project name is required'
     });
   }
 
   // Validate initial investment
-  if (!project.initialInvestment) {
-    errors.push({
-      field: 'Initial Investment',
-      message: 'Initial Investment is required',
-    });
-  } else {
-    const initialInvestmentResult = validateInitialInvestment(project.initialInvestment);
-    if (!initialInvestmentResult.isValid) {
-      errors.push(...initialInvestmentResult.errors);
-    }
+  const initialInvestmentValidation = validateInitialInvestment(project.initialInvestment);
+  if (!initialInvestmentValidation.isValid) {
+    errors.push(...initialInvestmentValidation.errors);
   }
 
   // Validate cash flows
-  if (!Array.isArray(project.cashFlows)) {
+  if (project.cashFlows.length === 0) {
     errors.push({
-      field: 'Cash Flows',
-      message: 'Cash Flows must be an array',
-    });
-  } else if (project.cashFlows.length === 0) {
-    errors.push({
-      field: 'Cash Flows',
-      message: 'At least one cash flow is required',
+      field: 'cashFlows',
+      message: 'At least one cash flow period is required'
     });
   } else {
-    project.cashFlows.forEach((cashFlow: CashFlow, index: number) => {
-      const cashFlowResult = validateCashFlow(cashFlow);
-      if (!cashFlowResult.isValid) {
-        cashFlowResult.errors.forEach((error: ValidationError) => {
+    project.cashFlows.forEach((cashFlow, index) => {
+      const cashFlowValidation = validateCashFlow(cashFlow);
+      if (!cashFlowValidation.isValid) {
+        cashFlowValidation.errors.forEach(error => {
           errors.push({
-            field: `Cash Flow ${index + 1} - ${error.field}`,
-            message: error.message,
+            field: `cashFlows[${index}].${error.field}`,
+            message: `Cash flow period ${index + 1}: ${error.message}`
           });
         });
       }
@@ -285,20 +292,13 @@ export const validateProject = (project: Project): ValidationResult => {
   }
 
   // Validate sale proceeds
-  if (!project.saleProceeds) {
-    errors.push({
-      field: 'Sale Proceeds',
-      message: 'Sale Proceeds is required',
-    });
-  } else {
-    const saleProceedsResult = validateSaleProceeds(project.saleProceeds);
-    if (!saleProceedsResult.isValid) {
-      errors.push(...saleProceedsResult.errors);
-    }
+  const saleProceedsValidation = validateSaleProceeds(project.saleProceeds);
+  if (!saleProceedsValidation.isValid) {
+    errors.push(...saleProceedsValidation.errors);
   }
 
   return {
     isValid: errors.length === 0,
-    errors,
+    errors
   };
 };
