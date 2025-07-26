@@ -2,11 +2,12 @@ import React from 'react';
 
 interface ButtonProps {
   children: React.ReactNode;
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent<HTMLButtonElement>) => void;
   type?: 'button' | 'submit' | 'reset';
   variant?: 'primary' | 'secondary' | 'danger';
   disabled?: boolean;
   className?: string;
+  'aria-label'?: string;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -16,6 +17,7 @@ export const Button: React.FC<ButtonProps> = ({
   variant = 'primary',
   disabled = false,
   className = '',
+  'aria-label': ariaLabel,
 }) => {
   const baseClasses = 'px-4 py-2 rounded font-medium focus:outline-none focus:ring-2 transition-colors';
   
@@ -33,6 +35,7 @@ export const Button: React.FC<ButtonProps> = ({
       onClick={onClick}
       disabled={disabled}
       className={`${baseClasses} ${variantClasses[variant]} ${disabledClasses} ${className}`}
+      aria-label={ariaLabel}
     >
       {children}
     </button>

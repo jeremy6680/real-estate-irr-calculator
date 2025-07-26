@@ -1,4 +1,4 @@
-import { Project } from '../types';
+import type { Project } from '../types';
 import { serializeProject, deserializeProject } from './serialization';
 
 /**

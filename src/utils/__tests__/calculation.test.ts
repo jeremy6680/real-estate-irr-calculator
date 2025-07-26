@@ -7,7 +7,7 @@ import {
     calculateProjectIRR
 } from '../calculation';
 import { createInitialInvestment, createCashFlow, createSaleProceeds, createProject } from '../factory';
-import { Project } from '../../types';
+
 
 describe('NPV Calculation', () => {
     it('should calculate NPV correctly for a simple cash flow series', () => {

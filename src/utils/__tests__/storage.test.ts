@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { ProjectStorage } from '../storage';
 import { createProject } from '../factory';
-import { Project } from '../../types';
-import { serializeProject, deserializeProject } from '../serialization';
+import type { Project } from '../../types';
+import { serializeProject } from '../serialization';
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -22,7 +22,7 @@ const localStorageMock = (() => {
 })();
 
 // Replace the global localStorage with our mock
-Object.defineProperty(global, 'localStorage', {
+Object.defineProperty(globalThis, 'localStorage', {
     value: localStorageMock,
     writable: true,
 });

@@ -1,4 +1,4 @@
-import { Project, InitialInvestment, CashFlow, SaleProceeds } from '../types';
+import type { Project, InitialInvestment, CashFlow, SaleProceeds } from '../types';
 import { calculateTotalInitialInvestment, calculateNetCashFlow, calculateNetSaleProceeds } from './index';
 
 /**

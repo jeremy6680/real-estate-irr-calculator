@@ -1,4 +1,4 @@
-import { Project, CashFlow, SaleProceeds, InitialInvestment, ErrorState } from '../types';
+import type { Project, CashFlow, SaleProceeds, InitialInvestment, ErrorState } from '../types';
 
 /**
  * Error types for IRR calculation

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Project } from '../types';
+import type { Project } from '../types';
 import { ProjectStorage } from '../utils/storage';
 import { createProject } from '../utils/factory';
 

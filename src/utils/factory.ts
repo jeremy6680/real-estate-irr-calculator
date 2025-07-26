@@ -1,4 +1,4 @@
-import { Project, InitialInvestment, CashFlow, SaleProceeds } from '../types';
+import type { Project, InitialInvestment, CashFlow, SaleProceeds } from '../types';
 import { generateId } from './index';
 import { calculateTotalInitialInvestment, calculateNetCashFlow, calculateNetSaleProceeds } from './index';
 
@@ -78,7 +78,7 @@ export const createSaleProceeds = (
  */
 export const createProject = (name: string, description?: string): Project => {
   const now = new Date();
-  
+
   return {
     id: generateId(),
     name,
